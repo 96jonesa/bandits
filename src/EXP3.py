@@ -13,7 +13,7 @@ def sample(distribution):
 
 
 class EXP3:
-    def __init__(self, T, n_arms, eta, X):
+    def __init__(self, T, n_arms, eta, X=None):
         self.T = T
         self.n_arms = n_arms
         self.eta = eta
@@ -24,12 +24,24 @@ class EXP3:
         self.aggregate_reward = torch.zeros(T + 1)
         self.actions = torch.zeros(T + 1)
 
-    def choose_and_pull_arm(self):
+    def choose_arm_and_observe(self):
         self.P[self.t] = torch.softmax(self.eta * self.S[self.t - 1], dim=0)
-        A = sample(self.P[self.t])
-        reward = self.X[self.t - 1][A]
+        arm = sample(self.P[self.t])
+        reward = self.X[self.t - 1][arm]
         self.S[self.t] = self.S[self.t - 1] + 1
-        self.S[self.t][A] -= (1 - reward) / self.P[self.t][A]
+        self.S[self.t][arm] -= (1 - reward) / self.P[self.t][arm]
         self.aggregate_reward[self.t] = self.aggregate_reward[self.t - 1] + reward
-        self.actions[self.t] = A
+        self.actions[self.t] = arm
+        self.t += 1
+
+    def choose_arm(self):
+        self.P[self.t] = torch.softmax(self.eta * self.S[self.t - 1], dim=0)
+        arm = sample(self.P[self.t])
+        return arm
+
+    def observe(self, arm, reward):
+        self.S[self.t] = self.S[self.t - 1] + 1
+        self.S[self.t][arm] -= (1 - reward) / self.P[self.t][arm]
+        self.aggregate_reward[self.t] = self.aggregate_reward[self.t - 1] + reward
+        self.actions[self.t] = arm
         self.t += 1

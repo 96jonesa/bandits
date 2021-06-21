@@ -12,7 +12,7 @@ def sample(distribution):
             return i
 
 
-# this can almost certainly be improved
+# TODO: make this faster and/or more accurate
 def get_P(n_arms, est_losses, eta, start):
     P = torch.zeros(1, n_arms)
 
@@ -38,7 +38,7 @@ def get_P(n_arms, est_losses, eta, start):
 
 
 class FTRLTsallisINF:
-    def __init__(self, T, n_arms, eta, X):
+    def __init__(self, T, n_arms, eta, X=None):
         self.T = T
         self.n_arms = n_arms
         self.eta = eta
@@ -53,7 +53,7 @@ class FTRLTsallisINF:
         for i in range(n_arms):
             self.P[0][i] = 1.0 / n_arms
 
-    def choose_and_pull_arm(self):
+    def choose_arm_and_observe(self):
         if self.t == 1:
             A = sample(self.P[0])
             reward = self.X[0][A]
@@ -70,3 +70,19 @@ class FTRLTsallisINF:
             self.actions[self.t] = A
             self.aggregate_reward[self.t] = self.aggregate_reward[self.t - 1] + reward
             self.t += 1
+
+    def choose_arm(self):
+        if self.t == 1:
+            arm = sample(self.P[0])
+            return arm
+        else:
+            self.P, self.start = get_P(self.est_losses, self.eta, self.start)
+            self.P = self.P ** (-2)
+            arm = sample(self.P[0])
+            return arm
+
+    def observe(self, arm, reward):
+        self.est_losses[self.t][arm] = (1.0 - reward) / self.P[0][arm]
+        self.actions[self.t] = arm
+        self.aggregate_reward[self.t] = self.aggregate_reward[self.t - 1] + reward
+        self.t += 1

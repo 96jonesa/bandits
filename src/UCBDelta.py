@@ -3,7 +3,7 @@ import math
 
 
 class UCBDelta:
-    def __init__(self, T, n_arms, X, delta):
+    def __init__(self, T, n_arms, delta, X=None):
         self.T = T
         self.n_arms = n_arms
         self.X = X
@@ -15,7 +15,7 @@ class UCBDelta:
         self.actions = torch.zeros(T + 1)
         self.empirical_means = torch.zeros(n_arms)
 
-    def choose_and_pull_arm(self):
+    def choose_arm_and_observe(self):
         if self.t in range(1, self.n_arms + 1):
             reward = self.X[self.t - 1][self.t - 1]
             self.total_reward[self.t - 1] += reward
@@ -33,3 +33,19 @@ class UCBDelta:
             self.aggregate_reward[self.t] = self.aggregate_reward[self.t - 1] + reward
             self.actions[self.t] = I
             self.t += 1
+
+    def choose_arm(self):
+        if self.t in range(1, self.n_arms + 1):
+            arm = self.t - 1
+            return arm
+        else:
+            arm = torch.argmax(self.empirical_means + torch.sqrt(2 * math.log(1 / self.delta) / self.num_pulls))
+            return arm
+
+    def observe(self, arm, reward):
+        self.total_rewards[arm] += reward
+        self.num_pulls[arm] += 1
+        self.empirical_means[arm] = self.total_rewards[arm] / self.num_pulls[arm]
+        self.aggregate_reward[self.t] = self.aggregate_reward[self.t - 1] + reward
+        self.actions[self.t] = arm
+        self.t += 1
