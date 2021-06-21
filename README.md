@@ -1,0 +1,2 @@
+# bandits
+Various bandit algorithms
