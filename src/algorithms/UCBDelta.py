@@ -18,7 +18,7 @@ class UCBDelta:
     def choose_arm_and_observe(self):
         if self.t in range(1, self.n_arms + 1):
             reward = self.X[self.t - 1][self.t - 1]
-            self.total_reward[self.t - 1] += reward
+            self.total_rewards[self.t - 1] += reward
             self.num_pulls[self.t - 1] += 1
             self.aggregate_reward[self.t] = self.aggregate_reward[self.t - 1] + reward
             self.actions[self.t] = self.t - 1

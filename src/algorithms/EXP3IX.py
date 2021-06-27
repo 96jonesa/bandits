@@ -33,6 +33,7 @@ class EXP3IX:
         self.L[self.t][A] += (1 - reward) / (self.P[self.t][A] + self.gamma)
         self.aggregate_reward[self.t] = self.aggregate_reward[self.t - 1] + reward
         self.actions[self.t] = A
+        self.t += 1
 
     def choose_arm(self):
         self.P[self.t] = torch.softmax(-1.0 * self.eta * self.L[self.t - 1], dim=0)
@@ -44,3 +45,4 @@ class EXP3IX:
         self.L[self.t][arm] += (1 - reward) / (self.P[self.t][arm] + self.gamma)
         self.aggregate_reward[self.t] = self.aggregate_reward[self.t - 1] + reward
         self.actions[self.t] = arm
+        self.t += 1

@@ -20,7 +20,7 @@ class TSBeta:
         sample = posterior.sample()  # sample from posterior
         I = torch.argmax(sample)  # select arm with highest sample from posterior
         reward = self.X[self.t - 1][I]  # pull selected arm
-        self.total_reward[I] += reward  # increment total reward after pulling arm
+        self.total_rewards[I] += reward  # increment total reward after pulling arm
         self.num_pulls[I] += 1  # increment total pulls after pulling arm
         self.alpha[I] += reward  # update posterior alpha
         self.beta[I] += 1 - reward  # update posterior beta
